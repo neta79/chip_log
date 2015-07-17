@@ -1,4 +1,24 @@
-add_library(chip_log src/clog.c include/clog.h)
-add_executable(test_init tests/test_init.c)
-target_link_libraries(chip_log)
+PROJECT(chip_log C)
+CMAKE_MINIMUM_REQUIRED( VERSION 2.6.0 )
+OPTION(DEVEL "enable debug, full compiler warnings, unit tests" OFF)
+OPTION(CODE_COVERAGE "produces test coverage report (requires gcc, gcov, lcov)" OFF)
+
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+INCLUDE_DIRECTORIES(.)
+
+IF (CODE_COVERAGE OR DEVEL)
+    INCLUDE(DevelopmentStuff)
+ENDIF()
+
+ADD_LIBRARY( chip_log
+    clog.c
+    clog.h
+    clog_str.h
+    clog_str.c
+    clog_basics.h
+    clog_lex.h
+    clog_lex.c
+    clog_parse.h
+    clog_parse.c
+)
 

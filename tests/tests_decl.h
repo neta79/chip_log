@@ -1,0 +1,17 @@
+int test_charattrs();
+int test_lex_err_unknown_token();
+int test_lex_err_unterminated_quote();
+int test_lex_tokens();
+int test_str_cmp_eq();
+int test_str_cmp_ne1();
+int test_str_cmp_ne2();
+int test_str_eq();
+int test_str_find();
+int test_str_findch();
+int test_str_init();
+int test_str_init_buf();
+int test_str_init_buf_null();
+int test_str_init_cstr();
+int test_str_neq();
+int test_str_splitch();
+int test_str_substr();
