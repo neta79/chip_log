@@ -15,10 +15,6 @@ struct clog_record_s {
     void        *msg_args;
 };
 
-typedef clog_record_st *clog_record;
-
-
-void clog_record_init()
 
 #endif /* __CLOG_RECORD_H__ */
 

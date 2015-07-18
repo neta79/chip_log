@@ -14,7 +14,6 @@ typedef enum {
     CLOG_LEVEL_NONE
 } CLOG_LEVEL;
 
-
 struct clog_record_s;
 typedef struct clog_record_s *clog_record;
 
@@ -23,5 +22,11 @@ typedef struct clog_logger_s *clog_logger;
 
 struct clog_handler_s;
 typedef struct clog_handler_s *clog_handler;
+
+struct clog_filter_s;
+typedef struct clog_filter_s *clog_filter;
+
+struct clog_sink_s;
+typedef struct clog_sink_s *clog_sink;
 
 #endif /* __CLOG_FWD_H__ */
