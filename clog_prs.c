@@ -1,4 +1,4 @@
-#include "clog_parse.h"
+#include "clog_prs.h"
 #include "clog_lex.h"
 
 struct configparser_t {

@@ -1,7 +1,7 @@
 #ifndef __CLOG_STR_H__
 #define __CLOG_STR_H__ 1
 
-#include "clog_basics.h"
+#include "clog_bas.h"
 
 typedef struct {
     const clog_ch *data;
