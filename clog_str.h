@@ -31,6 +31,8 @@ DLL_LOCAL void clog_str_split_init(clog_strsplit ctx, clog_str s, clog_ch ch);
 DLL_LOCAL int clog_str_split_next(clog_strsplit ctx);
 DLL_LOCAL int clog_str_cmq(clog_str a, clog_str b);
 DLL_LOCAL int clog_str_eq(clog_str a, clog_str b);
+DLL_LOCAL void clog_str_trim(clog_str s, clog_str trimmables);
+DLL_LOCAL void clog_str_trim_whitespaces(clog_str s);
 
 DLL_LOCAL unsigned int clog_chattr(clog_ch ch);
 

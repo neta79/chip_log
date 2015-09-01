@@ -15,10 +15,13 @@ ADD_LIBRARY( chip_log
     clog.h
     clog_str.h
     clog_str.c
-    clog_basics.h
+    clog_bas.h
+    clog_lex_fwd.h
     clog_lex.h
     clog_lex.c
-    clog_parse.h
-    clog_parse.c
+    clog_prs_fwd.h
+    clog_prs.h
+    clog_prs.c
+    clog_cfg.h
 )
 

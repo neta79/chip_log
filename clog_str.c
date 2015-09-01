@@ -1,7 +1,9 @@
 #include "clog_str.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+
+
+static clog_str clog_get_whitespaces();
 
 
 void clog_str_init(clog_str s)
@@ -200,6 +202,42 @@ int clog_str_eq(clog_str a, clog_str b)
     return clog_str_cmq(a, b) == 0;
 }
 
+static void clog_str_ltrim(clog_str s, clog_str trimmables)
+{
+    while (s->len > 0)
+    {
+        if (clog_str_find_ch(trimmables, s->data[0]) < 0)
+        {
+            break;
+        }
+        s->len--;
+        s->data++;
+    }
+}
+
+static void clog_str_rtrim(clog_str s, clog_str trimmables)
+{
+    while (s->len > 0)
+    {
+        if (clog_str_find_ch(trimmables, s->data[s->len-1]) < 0)
+        {
+            break;
+        }
+        s->len--;
+    }
+}
+
+void clog_str_trim(clog_str s, clog_str trimmables)
+{
+    clog_str_ltrim(s, trimmables);
+    clog_str_rtrim(s, trimmables);
+}
+
+void clog_str_trim_whitespaces(clog_str s)
+{
+    clog_str_trim(s, clog_get_whitespaces());
+}
+
 
 
 
@@ -350,6 +388,30 @@ DLL_LOCAL unsigned int clog_chattr(clog_ch ch)
     if ((unsigned int)ch >= map_size)
         return 0x00;
     return _ascii_charmap[(unsigned int)ch];
+}
+
+static clog_str clog_get_whitespaces()
+{
+    static clog_ch whitespaces[16];
+    static const int whitespaces_bufsize = sizeof(whitespaces)/sizeof(whitespaces[0]);
+    static clog_len whitespaces_len = 0;
+    int i;
+    static clog_str_st res;
+    if (whitespaces_len == 0)
+    {
+        for (i=0; i<(int)(sizeof(_ascii_charmap)/sizeof(_ascii_charmap[0])); ++i)
+        {
+            if (_ascii_charmap[(unsigned int)i] & CHAR_SPACE)
+            {
+                whitespaces[whitespaces_len] = (clog_ch)i;
+                whitespaces_len++;
+                assert(whitespaces_len < whitespaces_bufsize);
+            }
+        }
+        res.data = whitespaces;
+        res.len = whitespaces_len;
+    }
+    return &res;
 }
 
 

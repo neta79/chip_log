@@ -1,5 +1,5 @@
-#ifndef __CLOG_RECORD_H__
-#define __CLOG_RECORD_H__ 1
+#ifndef __CLOG_REC_H__
+#define __CLOG_REC_H__ 1
 
 #include <clog_fwd.h>
 
@@ -16,5 +16,5 @@ struct clog_record_s {
 };
 
 
-#endif /* __CLOG_RECORD_H__ */
+#endif /* __CLOG_REC_H__ */
 

@@ -1,12 +1,19 @@
-#ifndef __CLOG_PARSE_H__
-#define __CLOG_PARSE_H__ 1
+#ifndef __CLOG_PRS_H__
+#define __CLOG_PRS_H__ 1
 
-#include "clog_str.h"
+#include "clog_lex.h"
+#include "clog_prs_fwd.h"
 
-struct configparser_t;
-typedef struct configparser_t configparser_t;
+typedef clog_configparser_result (*clog_configparser_stage) (clog_configparser p);
 
-DLL_LOCAL void configparser_init(configparser_t *p, clog_str buf);
-DLL_LOCAL void configparser_free(configparser_t *p);
+struct clog_configparser_st {
+    clog_configlexer l;
+    clog_configparser_stage stage;
+    int param_level;
+    int got_comma;
+    int got_param;
+};
 
-#endif /* __CLOG_PARSE_H__ */
+
+
+#endif /* __CLOG_PRS_H__ */

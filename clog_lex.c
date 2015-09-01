@@ -1,59 +1,36 @@
 #include "clog_lex.h"
-#include <stdio.h>
-
-
-typedef struct {
-    clog_str_st buf;
-    token_typeid type;
-    unsigned int lineno;
-    unsigned int colno;
-} token_t;
-
-struct configlexer_t {
-    const clog_ch *begin;
-    const clog_ch *end;
-    const clog_ch *p;
-    unsigned int lineno;
-    unsigned int colno;
-    unsigned int ctr;
-    token_t t;
-};
-
-static configlexer_t _lexer;
-
-
 
 #define is_eof(l) ((l)->p == (l)->end)
 #define is_sep(l) (clog_iseol(*(l)->p) || clog_isspace(*(l)->p) || is_eof(l))
 #define is_ident_ch(l) (clog_isdigit(*(l)->p) || clog_isalpha(*(l)->p) || *(l)->p == '_')
-static void eat_whitespaces(configlexer_t *l);
-static void set_tok(token_t *t, configlexer_t *l, token_typeid _t);
-static void set_tok_buf(token_t *t, configlexer_t *l, token_typeid _t, const clog_ch *p, clog_len len);
-static int lex_ident(token_t *t, configlexer_t *l);
-static int lex_number(token_t *t, configlexer_t *l);
-static int lex_quote(token_t *t, configlexer_t *l);
-static int lex_remark(token_t *t, configlexer_t *l);
-static int lexer_next(token_t *t, configlexer_t *l);
+static void eat_whitespaces(clog_configlexer l);
+static void set_tok(token_t *t, clog_configlexer l, clog_token_typeid _t);
+static void set_tok_buf(token_t *t, clog_configlexer l, clog_token_typeid _t, const clog_ch *p, clog_len len);
+static int lex_ident(token_t *t, clog_configlexer l);
+static int lex_number(token_t *t, clog_configlexer l);
+static int lex_quote(token_t *t, clog_configlexer l);
+static int lex_remark(token_t *t, clog_configlexer l);
+static int lexer_next(token_t *t, clog_configlexer l);
+
+static clog_configlexer_st _lexer;
 
 
-
-
-configlexer_t *configlexer_init(clog_str config)
+clog_configlexer clog_configlexer_init(clog_str config)
 {
-    configlexer_t *l = &_lexer;
+    clog_configlexer l = &_lexer;
     l->begin = config->data;
     l->end = config->data+config->len;
-    configlexer_reset(l);
+    clog_configlexer_reset(l);
     return l;
 }
 
-void configlexer_free(configlexer_t *l)
+void clog_configlexer_free(clog_configlexer l)
 {
     /* nop */
     (void)l;
 }
 
-void configlexer_reset(configlexer_t *l)
+void clog_configlexer_reset(clog_configlexer l)
 {
     l->p = l->begin;
     l->lineno = 1;
@@ -65,24 +42,24 @@ void configlexer_reset(configlexer_t *l)
     l->t.colno=0;
 }
 
-int configlexer_isover(configlexer_t *l)
+int clog_configlexer_isover(clog_configlexer l)
 {
     return l->ctr > 0 &&
-        (l->t.type == T_END || configlexer_iserror(l));
+        (l->t.type == T_END || clog_configlexer_iserror(l));
 }
 
-token_typeid configlexer_next(configlexer_t *l)
+clog_token_typeid clog_configlexer_next(clog_configlexer l)
 {
     l->ctr += (unsigned int)lexer_next(&l->t, l);
     return l->t.type;
 }
 
-token_typeid configlexer_type(configlexer_t *l)
+clog_token_typeid clog_configlexer_type(clog_configlexer l)
 {
     return l->t.type;
 }
 
-const char* configlexer_typename(configlexer_t *l)
+const char* clog_configlexer_typename(clog_configlexer l)
 {
     switch (l->t.type)
     {
@@ -99,6 +76,7 @@ const char* configlexer_typename(configlexer_t *l)
     case T_SEMICOLON           : return "T_SEMICOLON";
     case T_PERCENT             : return "T_PERCENT";
     case T_DOLLAR              : return "T_DOLLAR";
+    case T_ASTERISK            : return "T_ASTERISK";
     case T_BKSLASH             : return "T_BKSLASH";
     case T_NEWLINE             : return "T_NEWLINE";
     case T_REMARK              : return "T_REMARK";
@@ -110,32 +88,32 @@ const char* configlexer_typename(configlexer_t *l)
     }
 }
 
-int configlexer_lineno(configlexer_t *l)
+int clog_configlexer_lineno(clog_configlexer l)
 {
     return (int)l->t.lineno;
 }
-int configlexer_colno(configlexer_t *l)
+int clog_configlexer_colno(clog_configlexer l)
 {
     return (int)l->t.colno;
 }
-clog_str_st configlexer_token(configlexer_t *l)
+clog_str_st clog_configlexer_token(clog_configlexer l)
 {
     return l->t.buf;
 }
 
-clog_str_st configlexer_at(configlexer_t *l)
+clog_str_st clog_configlexer_at(clog_configlexer l)
 {
     clog_str_st res;
     clog_str_init_buf(&res, l->p, (clog_len)(l->end - l->p));
     return res;
 }
 
-int configlexer_iserror(configlexer_t *l)
+int clog_configlexer_iserror(clog_configlexer l)
 {
     return l->t.type & 0x80;
 }
 
-const char* configlexer_geterror(configlexer_t *l)
+const char* clog_configlexer_geterror(clog_configlexer l)
 {
     switch (l->t.type)
     {
@@ -148,7 +126,7 @@ const char* configlexer_geterror(configlexer_t *l)
 
 
 
-static void eat_whitespaces(configlexer_t *l)
+static void eat_whitespaces(clog_configlexer l)
 {
     while (l->p != l->end && (clog_isspace(*l->p) && !clog_iseol(*l->p)))
     {
@@ -158,13 +136,13 @@ static void eat_whitespaces(configlexer_t *l)
 }
 
 
-static void set_tok(token_t *t, configlexer_t *l, token_typeid _t)
+static void set_tok(token_t *t, clog_configlexer l, clog_token_typeid _t)
 {
     t->colno = l->colno;
     t->lineno = l->lineno;
     t->type = _t;
 }
-static void set_tok_buf(token_t *t, configlexer_t *l, token_typeid _t, const clog_ch *p, clog_len len)
+static void set_tok_buf(token_t *t, clog_configlexer l, clog_token_typeid _t, const clog_ch *p, clog_len len)
 {
     t->buf.data = p;
     t->buf.len = len;
@@ -172,7 +150,7 @@ static void set_tok_buf(token_t *t, configlexer_t *l, token_typeid _t, const clo
 }
 
 
-static int lex_ident(token_t *t, configlexer_t *l)
+static int lex_ident(token_t *t, clog_configlexer l)
 {
     set_tok_buf(t, l, T_IDENT, l->p, 0);
     while (!is_eof(l) && is_ident_ch(l))
@@ -184,9 +162,9 @@ static int lex_ident(token_t *t, configlexer_t *l)
     return t->buf.len > 0;
 }
 
-static int lex_number(token_t *t, configlexer_t *l)
+static int lex_number(token_t *t, clog_configlexer l)
 {
-    configlexer_t save = *l;
+    clog_configlexer_st save = *l;
     set_tok_buf(t, l, T_NUMBER, l->p, 0);
     while (!is_eof(l) && clog_isdigit(*l->p))
     {
@@ -202,9 +180,9 @@ static int lex_number(token_t *t, configlexer_t *l)
     return lex_ident(t, l);
 }
 
-static int lex_quote(token_t *t, configlexer_t *l)
+static int lex_quote(token_t *t, clog_configlexer l)
 {
-    configlexer_t save = *l;
+    clog_configlexer_st save = *l;
     assert(!is_eof(l));
     assert(*l->p == '"');
 
@@ -235,7 +213,7 @@ static int lex_quote(token_t *t, configlexer_t *l)
     return 1;
 }
 
-static int lex_remark(token_t *t, configlexer_t *l)
+static int lex_remark(token_t *t, clog_configlexer l)
 {
     assert(!is_eof(l));
     assert(*l->p == '#');
@@ -258,9 +236,9 @@ static int lex_remark(token_t *t, configlexer_t *l)
     return 1;
 }
 
-static int lexer_next(token_t *t, configlexer_t *l)
+static int lexer_next(token_t *t, clog_configlexer l)
 {
-    configlexer_t save;
+    clog_configlexer_st save;
     eat_whitespaces(l);
 
     if (is_eof(l))
@@ -274,13 +252,13 @@ static int lexer_next(token_t *t, configlexer_t *l)
     if (clog_isdigit(*l->p))
     {
         lex_number(t, l);
-        return !configlexer_iserror(l);
+        return !clog_configlexer_iserror(l);
     }
 
     if (is_ident_ch(l))
     {
         lex_ident(t, l);
-        return !configlexer_iserror(l);
+        return !clog_configlexer_iserror(l);
     }
 
     if (clog_iseol(*l->p))
@@ -309,59 +287,40 @@ static int lexer_next(token_t *t, configlexer_t *l)
         break;
     case '(':
         set_tok_buf(t, l, T_OPENPAR, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case ')':
         set_tok_buf(t, l, T_CLOSEPAR, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '{':
         set_tok_buf(t, l, T_OPENBR, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '}':
         set_tok_buf(t, l, T_CLOSEBR, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '.':
         set_tok_buf(t, l, T_PERIOD, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case ',':
         set_tok_buf(t, l, T_COMMA, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '=':
         set_tok_buf(t, l, T_EQUAL, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case ';':
         set_tok_buf(t, l, T_SEMICOLON, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '%':
         set_tok_buf(t, l, T_PERCENT, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '\\':
         set_tok_buf(t, l, T_BKSLASH, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
+    case '*':
+        set_tok_buf(t, l, T_ASTERISK, l->p, 1);
+        goto _tok1;
     case '$':
         set_tok_buf(t, l, T_DOLLAR, l->p, 1);
-        l->p++;
-        l->colno++;
-        return 1;
+        goto _tok1;
     case '#':
         lex_remark(t, l);
         return 1;
@@ -370,11 +329,16 @@ static int lexer_next(token_t *t, configlexer_t *l)
     }
 
 _parse_error:
-    if (!configlexer_iserror(l))
+    if (!clog_configlexer_iserror(l))
     {
         /* can't figure out next token */
         set_tok(t, l, ERR_UNKNOWN_TOKEN);
     }
 
     return 0;
+
+_tok1:
+    l->p++;
+    l->colno++;
+    return 1;
 }

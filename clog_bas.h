@@ -1,5 +1,5 @@
-#ifndef __CLOG_BASICS_H__
-#define __CLOG_BASICS_H__ 1
+#ifndef __CLOG_BAS_H__
+#define __CLOG_BAS_H__ 1
 
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef BUILDING_DLL
@@ -40,4 +40,4 @@ typedef unsigned int clog_len;
 #endif
 #endif /* CLOG_DEVELOPER */
 
-#endif /* __CLOG_BASICS_H__ */
+#endif /* __CLOG_BAS_H__ */

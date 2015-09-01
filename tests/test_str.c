@@ -134,10 +134,6 @@ int test_str_init()
     check(s.len == 0);
     return 0;
 }
-#include "clog_str.h"
-#include "clog_lex.h"
-#include "test_support.h"
-#include <strings.h>
 
 int test_str_init_buf()
 {
@@ -215,4 +211,21 @@ int test_str_substr()
     check(b.len == 0);
     check(b.data == a.data + a.len);
     return 0;
+}
+
+int test_str_trim()
+{
+    clog_str_st a;
+    clog_str_st b;
+    static const clog_ch s1[] = " \t\r\n  . abcdef .\t \t";
+    static const clog_ch s2[] = ". abcdef .";
+    clog_str_init_c_str(&a, s1);
+    clog_str_init_c_str(&b, s2);
+    clog_str_trim_whitespaces(&a);
+    printf("[");
+    fwrite(a.data, a.len, 1, stdout);
+    printf("]\n");
+    check(clog_str_eq(&a, &b));
+    return 0;
+
 }
