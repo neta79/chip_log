@@ -227,5 +227,108 @@ int test_str_trim()
     printf("]\n");
     check(clog_str_eq(&a, &b));
     return 0;
+}
 
+int test_str_wildmat()
+{
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "ciccio.pasticcio";
+        static const clog_ch s2[] = "ciccio.pasticcio";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "ciccio.";
+        static const clog_ch s2[] = "ciccio.pasticcio";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(!clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "ciccio.";
+        static const clog_ch s2[] = "ciccio.*";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "ciccio.";
+        static const clog_ch s2[] = "ciccio\\.";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "ciccio\\";
+        static const clog_ch s2[] = "ciccio\\";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "ciccia";
+        static const clog_ch s2[] = "ciccio";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(!clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "cicciaio";
+        static const clog_ch s2[] = "cicci?io";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "cicciaio";
+        static const clog_ch s2[] = "cicci*io";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "cicciaio";
+        static const clog_ch s2[] = "cicci**io";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "cicciaio";
+        static const clog_ch s2[] = "cicci*ia";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(!clog_str_wildmat(&a, &b));
+    }
+    {
+        clog_str_st a;
+        clog_str_st b;
+        static const clog_ch s1[] = "cicciaio";
+        static const clog_ch s2[] = "cicci*";
+        clog_str_init_c_str(&a, s1);
+        clog_str_init_c_str(&b, s2);
+        check(clog_str_wildmat(&a, &b));
+    }
+    return 0;
 }

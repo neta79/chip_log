@@ -19,7 +19,7 @@ void clog_str_init_buf(clog_str s, const clog_ch *buf, clog_len size)
         clog_str_init(s);
         return;
     }
-    s->data = (clog_ch*)buf;
+    s->data = (const clog_ch*)buf;
     s->len = size / sizeof(clog_ch);
 }
 
@@ -236,6 +236,82 @@ void clog_str_trim(clog_str s, clog_str trimmables)
 void clog_str_trim_whitespaces(clog_str s)
 {
     clog_str_trim(s, clog_get_whitespaces());
+}
+
+static int clog_str_wildmat_impl(const clog_ch *txt, const clog_ch *txt_end, const clog_ch *p, const clog_ch *p_end)
+{
+    clog_ch chp, cht;
+    for (; p != p_end; ++txt, ++p)
+    {
+        chp = *p;
+        if (txt == txt_end)
+        {
+            goto _end_txt;
+        }
+        cht = *txt;
+
+        switch (chp)
+        {
+        case '\\':
+            p++;
+            if (p == p_end)
+            {
+                /* malformed pattern: backslash at and of text */
+                return cht == '\\';
+            }
+            chp = *p;
+            /* FALLTHROUGH */
+        default:
+            if (cht != chp)
+            {
+                goto _mismatch;
+            }
+            continue;
+        case '?':
+            /* Match anything. */
+            continue;
+        case '*':
+            p++;
+            while (p != p_end && *p == '*')
+            {
+                /* Consecutive stars act just like one. */
+                p++;
+            }
+            if (p == p_end)
+            {
+                goto _match;
+            }
+            for (; txt != txt_end; txt++)
+            {
+                if (clog_str_wildmat_impl(txt, txt_end, p, p_end))
+                {
+                    goto _match;
+                }
+            }
+            goto _mismatch;
+        }
+    }
+
+    return txt == txt_end;
+
+_end_txt:
+    return chp == '*';
+
+_mismatch:
+    return 0;
+
+_match:
+    return 1;
+}
+
+
+int clog_str_wildmat(clog_str text, clog_str pattern)
+{
+    const clog_ch *txt = text->data;
+    const clog_ch *txt_end = txt+text->len;
+    const clog_ch *p = pattern->data;
+    const clog_ch *p_end = p+pattern->len;
+    return clog_str_wildmat_impl(txt, txt_end, p, p_end);
 }
 
 

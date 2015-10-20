@@ -51,3 +51,4 @@ int test_str_neq();
 int test_str_splitch();
 int test_str_substr();
 int test_str_trim();
+int test_str_wildmat();

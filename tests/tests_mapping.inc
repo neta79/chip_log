@@ -51,3 +51,4 @@
 {"str_splitch", test_str_splitch},
 {"str_substr", test_str_substr},
 {"str_trim", test_str_trim},
+{"str_wildmat", test_str_wildmat},
